@@ -10,10 +10,6 @@ import org.springframework.web.bind.annotation.*;
 import java.time.LocalDate;
 import java.util.List;
 
-/**
- * Controller for managing Doctor-related operations including
- * CRUD and availability checking based on date and authentication token.
- */
 @RestController
 @RequestMapping("/api/doctors")
 public class DoctorController {
@@ -21,71 +17,58 @@ public class DoctorController {
     @Autowired
     private DoctorService doctorService;
 
-    /**
-     * Get all doctors.
-     */
     @GetMapping
     public List<Doctor> getAllDoctors() {
         return doctorService.findAll();
     }
 
-    /**
-     * Get doctor by ID.
-     */
     @GetMapping("/{id}")
     public ResponseEntity<Doctor> getDoctorById(@PathVariable Long id) {
-        Doctor doctor = doctorService.findById(id);
-        if (doctor != null) {
-            return ResponseEntity.ok(doctor);
-        } else {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
-        }
+        Doctor doc = doctorService.findById(id);
+        if (doc == null) return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
+        return ResponseEntity.ok(doc);
     }
 
-    /**
-     * Create a new doctor.
-     */
     @PostMapping
-    public ResponseEntity<Doctor> addDoctor(@RequestBody Doctor doctor) {
-        return ResponseEntity.status(HttpStatus.CREATED).body(doctorService.save(doctor));
+    public ResponseEntity<Doctor> createDoctor(@RequestBody Doctor doctor) {
+        Doctor saved = doctorService.save(doctor);
+        return ResponseEntity.status(HttpStatus.CREATED).body(saved);
     }
 
-    /**
-     * ✅ Retrieve a doctor's availability based on role, doctorId, date, and token.
-     */
+    // Availability endpoint expects Authorization header and role param (as before)
     @GetMapping("/availability")
-    public ResponseEntity<?> getDoctorAvailability(
-            @RequestParam String role,
+    public ResponseEntity<?> getAvailability(
             @RequestParam Long doctorId,
             @RequestParam String date,
-            @RequestHeader("Authorization") String token
+            @RequestParam(required = false) String role,
+            @RequestHeader(value = "Authorization", required = false) String authorization
     ) {
-        // Simulate token validation
-        if (token == null || !token.startsWith("Bearer ")) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
-                    .body("Invalid or missing token.");
+        // Basic token check (you can replace with TokenService)
+        if (authorization == null || !authorization.startsWith("Bearer ")) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Invalid token");
         }
 
-        // Check role permission
-        if (!role.equalsIgnoreCase("ADMIN") && !role.equalsIgnoreCase("STAFF")) {
-            return ResponseEntity.status(HttpStatus.FORBIDDEN)
-                    .body("Access denied. Only ADMIN or STAFF can view availability.");
+        // Role check
+        if (role != null && !(role.equalsIgnoreCase("ADMIN") || role.equalsIgnoreCase("STAFF"))) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).body("Access denied");
         }
 
-        // Convert date string to LocalDate
-        LocalDate targetDate;
+        LocalDate d;
         try {
-            targetDate = LocalDate.parse(date);
+            d = LocalDate.parse(date);
         } catch (Exception e) {
-            return ResponseEntity.badRequest().body("Invalid date format. Use YYYY-MM-DD.");
+            return ResponseEntity.badRequest().body("date must be YYYY-MM-DD");
         }
 
-        // Get availability from service
-        List<String> availableSlots = doctorService.getDoctorAvailability(doctorId, targetDate);
-        if (availableSlots.isEmpty()) {
-            return ResponseEntity.ok("No available slots for this date.");
-        }
+        List<String> slots = doctorService.getDoctorAvailability(doctorId, d);
+        return ResponseEntity.ok(slots);
+    }
 
-        return ResponseEntity.ok(availableSlots);
+    // Login validation endpoint (example)
+    @PostMapping("/login")
+    public ResponseEntity<?> login(@RequestParam String email, @RequestParam String password) {
+        return doctorService.validateDoctorLogin(email, password)
+                .map(doc -> ResponseEntity.ok(doc))
+                .orElseGet(() -> ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Invalid credentials"));
     }
 }
