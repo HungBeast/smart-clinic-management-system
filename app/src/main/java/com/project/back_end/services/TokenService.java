@@ -1,27 +1,61 @@
-package com.yourorg.service;
+package com.project.back_end.services;
 
+import io.jsonwebtoken.Jwts;
+import io.jsonwebtoken.SignatureAlgorithm;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import java.util.Date;
-import io.jsonwebtoken.Jwts;
-import io.jsonwebtoken.SignatureAlgorithm;
 
 @Service
 public class TokenService {
-    private String secret = "replaceWithYourSecretKey";
 
-    public String generateToken(String username) {
+    // ✅ Lấy secret key từ application.properties thay vì hardcode
+    @Value("${jwt.secret}")
+    private String jwtSecret;
+
+    // ✅ Thời gian hết hạn token (1 giờ)
+    private static final long EXPIRATION_TIME = 3600000;
+
+    /**
+     * ✅ Generate JWT token using user's email
+     * @param email - email of the authenticated user
+     * @return generated JWT token
+     */
+    public String generateToken(String email) {
         Date now = new Date();
-        Date exp = new Date(now.getTime() + 1000 * 60 * 60 * 24); // 24h
+        Date expiryDate = new Date(now.getTime() + EXPIRATION_TIME);
+
         return Jwts.builder()
-                .setSubject(username)
+                .setSubject(email) // ✅ dùng email thay vì username
                 .setIssuedAt(now)
-                .setExpiration(exp)
-                .signWith(SignatureAlgorithm.HS256, secret)
+                .setExpiration(expiryDate)
+                .signWith(SignatureAlgorithm.HS256, jwtSecret)
                 .compact();
     }
 
-    public String parseUsername(String token) {
-        return Jwts.parser().setSigningKey(secret).parseClaimsJws(token).getBody().getSubject();
+    /**
+     * ✅ Verify token validity
+     */
+    public boolean validateToken(String token) {
+        try {
+            Jwts.parser()
+                    .setSigningKey(jwtSecret)
+                    .parseClaimsJws(token);
+            return true;
+        } catch (Exception e) {
+            return false;
+        }
+    }
+
+    /**
+     * ✅ Extract email from token
+     */
+    public String getEmailFromToken(String token) {
+        return Jwts.parser()
+                .setSigningKey(jwtSecret)
+                .parseClaimsJws(token)
+                .getBody()
+                .getSubject();
     }
 }
