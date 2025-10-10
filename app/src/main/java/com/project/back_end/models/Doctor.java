@@ -1,82 +1,47 @@
-package com.yourorg.model;
+package com.project.back_end.models;
 
-import javax.persistence.*;
-import java.time.LocalDateTime;
-import java.util.List;
+import jakarta.persistence.Entity;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
 
 @Entity
-@Table(name = "doctor")
 public class Doctor {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    private Long userId;
-
-    private String fullName;
-    private String specialty;
+    private String name;
+    private String specialization;
     private String email;
-    private String phone;
+    private String phoneNumber;
 
-     public Doctor() {
-    }
+    public Doctor() {}
 
-    public Doctor(Long id, Long userId, String fullName, String specialty, String email, String phone) {
-        this.id = id;
-        this.userId = userId;
-        this.fullName = fullName;
-        this.specialty = specialty;
+    public Doctor(String name, String specialization, String email, String phoneNumber) {
+        this.name = name;
+        this.specialization = specialization;
         this.email = email;
-        this.phone = phone;
+        this.phoneNumber = phoneNumber;
     }
 
-    public Long getId() {
-        return id;
-    }
+    public Long getId() { return id; }
 
-    public void setId(Long id) {
-        this.id = id;
-    }
+    public void setId(Long id) { this.id = id; }
 
-    public Long getUserId() {
-        return userId;
-    }
+    public String getName() { return name; }
 
-    public void setUserId(Long userId) {
-        this.userId = userId;
-    }
+    public void setName(String name) { this.name = name; }
 
-    public String getFullName() {
-        return fullName;
-    }
+    public String getSpecialization() { return specialization; }
 
-    public void setFullName(String fullName) {
-        this.fullName = fullName;
-    }
+    public void setSpecialization(String specialization) { this.specialization = specialization; }
 
-    public String getSpecialty() {
-        return specialty;
-    }
+    public String getEmail() { return email; }
 
-    public void setSpecialty(String specialty) {
-        this.specialty = specialty;
-    }
+    public void setEmail(String email) { this.email = email; }
 
-    public String getEmail() {
-        return email;
-    }
+    public String getPhoneNumber() { return phoneNumber; }
 
-    public void setEmail(String email) {
-        this.email = email;
-    }
-
-    public String getPhone() {
-        return phone;
-    }
-
-    public void setPhone(String phone) {
-        this.phone = phone;
-    }
-  
-    
+    public void setPhoneNumber(String phoneNumber) { this.phoneNumber = phoneNumber; }
 }
