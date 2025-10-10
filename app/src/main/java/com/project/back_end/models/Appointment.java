@@ -1,69 +1,67 @@
-package com.yourorg.model;
+package com.project.back_end.models;
 
-import javax.persistence.*;
+import jakarta.persistence.*;
+import jakarta.validation.constraints.Future;
+import jakarta.validation.constraints.NotNull;
 import java.time.LocalDateTime;
 
+/**
+ * The Appointment entity represents a scheduled meeting between a Doctor and a Patient
+ * in the Smart Clinic system. It defines JPA relationships and ensures data integrity
+ * with validation annotations.
+ */
 @Entity
-@Table(name = "appointment")
 public class Appointment {
+
+    /** Unique identifier for each appointment (auto-generated). */
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    private Long patientId;
-    private Long doctorId;
+    /** The doctor associated with this appointment. */
+    @ManyToOne
+    @JoinColumn(name = "doctor_id", nullable = false)
+    private Doctor doctor;
 
+    /** The patient associated with this appointment. */
+    @ManyToOne
+    @JoinColumn(name = "patient_id", nullable = false)
+    private Patient patient;
+
+    /** The scheduled date and time of the appointment. */
+    @NotNull
+    @Future(message = "Appointment time must be in the future")
     private LocalDateTime appointmentTime;
 
-    private String status; // SCHEDULED, COMPLETED, CANCELLED
+    /** Notes or reason for the appointment. */
+    private String reason;
 
     public Appointment() {}
 
-    public Appointment(Long patientId, Long doctorId, LocalDateTime appointmentTime, String status) {
-        this.patientId = patientId;
-        this.doctorId = doctorId;
+    public Appointment(Doctor doctor, Patient patient, LocalDateTime appointmentTime, String reason) {
+        this.doctor = doctor;
+        this.patient = patient;
         this.appointmentTime = appointmentTime;
-        this.status = status;
+        this.reason = reason;
     }
 
-    public Long getId() {
-        return id;
-    }
+    public Long getId() { return id; }
 
-    public void setId(Long id) {
-        this.id = id;
-    }
+    public void setId(Long id) { this.id = id; }
 
-    public Long getPatientId() {
-        return patientId;
-    }
+    public Doctor getDoctor() { return doctor; }
 
-    public void setPatientId(Long patientId) {
-        this.patientId = patientId;
-    }
+    public void setDoctor(Doctor doctor) { this.doctor = doctor; }
 
-    public Long getDoctorId() {
-        return doctorId;
-    }
+    public Patient getPatient() { return patient; }
 
-    public void setDoctorId(Long doctorId) {
-        this.doctorId = doctorId;
-    }
+    public void setPatient(Patient patient) { this.patient = patient; }
 
-    public LocalDateTime getAppointmentTime() {
-        return appointmentTime;
-    }
+    public LocalDateTime getAppointmentTime() { return appointmentTime; }
 
-    public void setAppointmentTime(LocalDateTime appointmentTime) {
-        this.appointmentTime = appointmentTime;
-    }
+    public void setAppointmentTime(LocalDateTime appointmentTime) { this.appointmentTime = appointmentTime; }
 
-    public String getStatus() {
-        return status;
-    }
+    public String getReason() { return reason; }
 
-    public void setStatus(String status) {
-        this.status = status;
-    }
-    
+    public void setReason(String reason) { this.reason = reason; }
 }
